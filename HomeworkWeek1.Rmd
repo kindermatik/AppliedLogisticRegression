@@ -50,11 +50,11 @@ plot(x=data$SPHEQ,y=data$MYOPIC,pch="·"
   
 c. Write down an expression for the likelihood and log likelihood for the logistic regression model in part (a) using the ungrouped, n = 618 , data. Obtain expressions for the two likelihood equations.  
   
-$\ell(\beta)=\prod_{i=1}^{n}[\pi(x_i)]^{y_i}[1-\pi(1-x_i)]^{1-y_i}$  
+$\ell(\beta)=\prod_{i=1}^{n}[\pi(x_i)]^{y_i}[1-\pi(x_i)]^{1-y_i}$  
   
 applying natural logarithm to expression above  
   
-$L(\beta)=ln(\ell(\beta))=\sum_{i=1}^{n}y_iln[\pi(x_i)]+(1-y_i)ln[1-\pi(1-x_i)]$
+$L(\beta)=ln(\ell(\beta))=\sum_{i=1}^{n}y_iln[\pi(x_i)]+(1-y_i)ln[1-\pi(x_i)]$
   
   
 The likelihood equations are:  
@@ -117,12 +117,12 @@ plot(x=icu$AGE,y=icu$STA,pch="·"
      ,ylab="STA")
 ```  
   
-$\ell(\beta)=\prod_{i=1}^{n}[\pi(x_i)]^{y_i}[1-\pi(1-x_i)]^{1-y_i}$  
+$\ell(\beta)=\prod_{i=1}^{n}[\pi(x_i)]^{y_i}[1-\pi(x_i)]^{1-y_i}$  
 $where\,x=AGE\,and\,y_i=0\,if\,the\,patient\,lived\,or\,y_i=1\,if\,the\,patient\,died$  
   
 applying natural logarithm to expression above  
   
-$L(\beta)=ln(\ell(\beta))=\sum_{i=1}^{n}y_iln[\pi(x_i)]+(1-y_i)ln[1-\pi(1-x_i)]$
+$L(\beta)=ln(\ell(\beta))=\sum_{i=1}^{n}y_iln[\pi(x_i)]+(1-y_i)ln[1-\pi(x_i)]$
   
   
 The likelihood equations are:  

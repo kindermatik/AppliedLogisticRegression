@@ -1,0 +1,165 @@
+---
+title: "Applied Logistic Regression - Exercise Week 1"
+author: "Yago Durán Cid"
+date: "16/05/2015"
+output:
+  pdf_document:
+    fig_caption: yes
+    keep_tex: yes
+    latex_engine: lualatex
+  html_document: default
+---
+  
+**WEEK  1**	
+  
+*Exercise 1:*  
+Use the Myopia Study (MYOPIA.dta) One variable that is clearly important is the initial value of spherical equivalent refraction (SPHEQ).
+
+a. Write down the equation for the logistic regression model of SPHEQ on MYOPIA. Write down the equation for the logit transformation of this logistic regression model. What characteristic of the outcome variable, MYOPIA, leads us to consider the logistic regression model as opposed to the usual linear regression model to describe the relationship between MYOPIA and SPHEQ?
+  
+Given the  data for myopia where y=0 if the subject has myopia and y=1 if the subject has not got myopia.
+  
+To evaluate the probability of a subject has not got myopia given a value of spherical equivalent refraction x we can write the following logistic regression model:  
+  
+  $\pi(x)=E(y|x)=\frac{e^{(\beta_0+\beta_1x)}}{1+e^{(\beta_0+\beta_1x)}}$  
+  
+The odd ratio of the equation above would be:  
+  
+  $Odd\,Ratio=\frac{\pi(x)}{(1-\pi(x))}$  
+  
+And the natural logarithm of the odd ratio  would be:  
+  
+  $ln\bigg(\frac{\pi(x)}{(1-\pi(x))}\bigg)=\beta_0+\beta_1x$
+   
+The assumption in the case of a linear regression model is:  
+  
+  $y=E(y|x)+\varepsilon$ where $\varepsilon \rightarrow N(0,\sigma^2)$ and therefore $y|x~N(E(y|x),\sigma^2)$ which in our case is not true given that we have only two possible outcomes (1 or 0)
+  
+b. Form a scatterplot of MYOPIA vs. SPHEQ.
+
+```{r,echo=FALSE,fig.align='center',fig.width=7,fig.height=4}
+#Uploads myopia in R
+#We name the dataset as data
+data <- read.csv("~/Coursera/Applied Logistic Regression/Homework/MYOPIA-fixed.csv")
+
+#Scatterplot of myopia & spherical equivalent refraction
+plot(x=data$SPHEQ,y=data$MYOPIC,pch="·"
+     ,xlab="Spherical Equivalent Refraction"
+     ,ylab="Myopic")
+```
+  
+c. Write down an expression for the likelihood and log likelihood for the logistic regression model in part (a) using the ungrouped, n = 618 , data. Obtain expressions for the two likelihood equations.  
+  
+$\ell(\beta)=\prod_{i=1}^{n}[\pi(x_i)]^{y_i}[1-\pi(1-x_i)]^{1-y_i}$  
+  
+applying natural logarithm to expression above  
+  
+$L(\beta)=ln(\ell(\beta))=\sum_{i=1}^{n}y_iln[\pi(x_i)]+(1-y_i)ln[1-\pi(1-x_i)]$
+  
+  
+The likelihood equations are:  
+  
+  $\sum_{i=1}^{n}(y_i-\pi(x_i))=0$
+  $\sum_{i=1}^{n}x_i(y_i-\pi(x_i))=0$
+  
+  
+d. Obtain the maximum likelihood estimates of the parameters of the logistic
+regression model in part (a). These estimates should be based on the ungrouped, n = 618 ,data. Using these estimates, write down the equation for the fitted values, that is, the estimated logistic probabilities. Plot the equation for the fitted values on the axes used in the scatterplots in parts (b) and (c).  
+  
+```{r,echo=FALSE}
+#We use glm function in R to get estimated parameters
+summary(glm(data=data,MYOPIC~SPHEQ,family="binomial"))
+```  
+  
+  Substituting with the estimated values we get: 
+  
+  $\pi_{e}(x)=\frac{e^{(0.05397-3.8331x)}}{(1+e^{(0.05397-3.8331x)})}$
+  
+```{r,echo=FALSE,fig.align='center',fig.width=7,fig.height=4}
+
+#Scatterplot of myopia & spherical equivalent refraction
+plot(x=data$SPHEQ,y=data$MYOPIC,pch="·"
+     ,xlab="Spherical Equivalent Refraction"
+     ,ylab="Myopic")
+
+#We add estimated probabilities from Logistic regression
+points(x=data$SPHEQ,y=glm(data=data,MYOPIC~SPHEQ,family="binomial")$fitted.values,pch="·",col="red")
+
+abline(h=0.5,lty=2)
+```
+  
+*Exercise 2:*  
+Use the ICU study (icu.dta)
+The ICU data set consists of a sample of 200 subjects who were part of a much larger study on survival of patients following admission to an adult intensive care unit (ICU). The major goal of this study was to develop a logistic regression model to predict the probability of survival to hospital discharge of these patients. A number of publications have appeared which have focused on various facets of this problem.  
+
+a. Write down the equation for the logistic regression model of STA on AGE. Write down the equation for the logit transformation of this logistic regression model. What characteristic of the outcome variable, STA, leads us to consider the logistic regression model as opposed to the usual linear regression model to describe the relationship between STA and AGE?  
+  
+The logistic regression model is: 
+  
+  $\pi(x)=E(y|x)=\frac{e^{(\beta_0+\beta_1x)}}{1+e^{(\beta_0+\beta_1x)}}$ 
+  $where\,x=AGE\,and\,\pi(x)= Prob(STA=1|AGE)$  
+  
+Being the logit transformation:  
+  
+  $ln\bigg(\frac{\pi(x)}{(1-\pi(x))}\bigg)=\beta_0+\beta_1x$
+  
+Usual linear regression analysis is not recommended given the binary nature of STA  
+
+b. Form a scatterplot of STA versus AGE.c. Write down an expression for the likelihood and log likelihood for the logistic regression model in part (a) using the ungrouped, n = 200 , data. Obtain expressions for the two likelihood equations.  
+```{r,echo=FALSE,fig.align='center',fig.width=7,fig.height=4}
+#Uploads ICU dataset in R
+#We name the dataset as icu
+icu <- read.csv("~/Coursera/Applied Logistic Regression/Homework/icu.csv")
+
+#Scatterplot of STA & AGE equivalent refraction
+plot(x=icu$AGE,y=icu$STA,pch="·"
+     ,xlab="Age"
+     ,ylab="STA")
+```  
+  
+$\ell(\beta)=\prod_{i=1}^{n}[\pi(x_i)]^{y_i}[1-\pi(1-x_i)]^{1-y_i}$  
+$where\,x=AGE\,and\,y_i=0\,if\,the\,patient\,lived\,or\,y_i=1\,if\,the\,patient\,died$  
+  
+applying natural logarithm to expression above  
+  
+$L(\beta)=ln(\ell(\beta))=\sum_{i=1}^{n}y_iln[\pi(x_i)]+(1-y_i)ln[1-\pi(1-x_i)]$
+  
+  
+The likelihood equations are:  
+  
+  $\sum_{i=1}^{n}(y_i-\pi(x_i))=0$
+  $\sum_{i=1}^{n}x_i(y_i-\pi(x_i))=0$  
+  
+  
+d. Obtain the maximum likelihood estimates of the parameters of the logistic
+regression model in part (a). These estimates should be based on the ungrouped, n = 200 , data. Using these estimates, write down the equation for the fitted values, that is, the estimated logistic probabilities. Plot the equation for the fitted values on the axes used in the scatterplots in part (b).  
+```{r,echo=FALSE}
+#We use glm function in R to get estimated parameters
+summary(glm(data=icu,STA~AGE,family="binomial"))
+```  
+  
+  Substituting with the estimated values we get: 
+  
+  $\pi_{e}(x)=\frac{e^{(-3.05851+0.02754AGE)}}{(1+e^{(-3.05851-0.02754AGE)})}$  
+  
+  And the logit transformation:  
+  
+  $g(x)=-3.05851-0.02754AGE$  
+  
+```{r,echo=FALSE,fig.align='center',fig.width=7,fig.height=4}
+
+#Scatterplot of STA & AGE equivalent refraction
+plot(x=icu$AGE,y=icu$STA,pch="·"
+     ,xlab="Age"
+     ,ylab="STA")
+
+#We add estimated probabilities from Logistic regression
+points(x=icu$AGE,y=glm(data=icu,STA~AGE,family="binomial")$fitted.values,pch="·",col="red")
+
+abline(h=0.5,lty=2)
+```  
+  
+e. Summarize (describe in words) the results presented in the plot obtained from parts (b) and (d).
+	
+Given the dichotomous nature of the STA variable (patients or live or die) Logistic Regression is appropriate to understand the impact of age on the probability of surviving hospital discharge.  
+From estimated parameters it seems that as the age increases the probability of survive to hospital discharge reduces.

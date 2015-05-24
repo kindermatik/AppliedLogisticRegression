@@ -1,0 +1,69 @@
+---
+title: "Applied Logistic Regression - Exercise Week 2"
+author: "Yago Durán Cid"
+date: "24/05/2015"
+output:
+  pdf_document:
+    keep_tex: yes
+    latex_engine: lualatex
+---
+**WEEK  2** 
+
+*Exercise 1:*  
+
+Use the Myopia Study (MYOPIA-fixed.dta)  
+a. Using the results of the output from R, assess the significance of the slope coefficient for SPHEQ using the likelihood ratio test and the Wald test. What
+assumptions are needed for the p-values computed for each of these tests to be valid? Are the results of these tests consistent with one another? What is the value of the deviance for the fitted model?  
+  
+We keep the basic model we used in homework 1. This is $\pi(x)=E(y|x)=\frac{e^{(\beta_0+\beta_1x)}}{1+e^{(\beta_0+\beta_1x)}}$ which gives foolowing results:  
+
+```{r,echo=FALSE}
+#Uploads myopia in R
+#We name the dataset as data
+data <- read.csv("~/Coursera/Applied Logistic Regression/Homework/MYOPIA-fixed.csv")
+
+#We use glm function in R to get estimated parameters
+lrmodel<-glm(data=data,MYOPIC~SPHEQ,family="binomial")
+summary(lrmodel)
+```  
+
+as per data above, deviance of the model is `r lrmodel$deviance`compared to a deviance of the model with only a constant variable of `r lrmodel$null.deviance`  
+We can test the overall significance of the variables (both constant $\beta_0$ and SPHEQ $\beta_1$) using the likelihood ratio test.  
+  
+  $G=-2ln\b[\frac{likelihood\,model\,without\,\beta_1}{likelihood\,model\,with\,\beta_1}]$  
+  
+  Function used in R does not show the likelihood ratio, but offers instead the deviance which is directly related to the likelihood ratio: $log\,likelihood=\frac{Deviance}{-2}$  
+  
+  Therefore, we can rewrite the likelihod ratio test based on the deviance as follows:  
+  
+  $G=-2ln\b[\frac{likelihood\,model\,without\,\beta_1}{likelihood\,model\,with\,\beta_1}]=-2log\,likelihood_{model\,without\,\beta_1}+2log\,likelihood_{model\,with\,\beta_1}=Deviance_{model\,without\,\beta_1}-Deviance_{model\,with\,\beta_1}=480.077-337.345=142.732$  
+  
+  We know that in the case $\beta_1=0$ the likelihood ratio follows a $\chi^2$ distribution. That allow us to estimate the probability of $\beta_1=0$. Thus, p-value in our case is `r pchisq(lrmodel$null.deviance-lrmodel$deviance,df=1,lower.tail=FALSE)`so we can assume the model including SPHEQ is appropriate.  
+  
+  The Wald test is easier witht he data proovided by R since it is automatically reported in R. Following this test we can say that SPHEQ is significant while the constant is not. This is consistent with the likelihood ratio test since the likelihood ratio test.  
+If we want to use likelihood ratio test to asses the significance of the constant, we only have to compare the likelihood of the model including the constant and SPHEQ along with the model not including the constant abut including SPHEQ.  
+  
+```{r,echo=FALSE}
+
+#We use glm function in R to get estimated parameters of model not including a constant
+lrmodelnobeta0<-glm(data=data,MYOPIC~SPHEQ-1,family="binomial")
+```   
+
+The p-value of $\beta_0=0$ is `r pchisq(lrmodel$null.deviance-lrmodel$deviance,df=1,lower.tail=FALSE)` which is consistent with the Wald statistic.  
+
+*Exercise 2:*  
+
+Use the ICU study (icu.dta) Using the results of the output from the logistic regression package used for problem 2 part (d) of week 1, assess the significance of the slope coefficient for AGE using the likelihood ratio test and the Wald test. What assumptions are needed for the p-values computed for each of these tests to be valid? Are the results of these tests consistent with one another? What is the value of the deviance for the fitted model? 
+
+As in previous section we show the results of model estimated in frist week homework  
+```{r,echo=FALSE}
+#Uploads ICU dataset in R
+#We name the dataset as icu
+icu <- read.csv("~/Coursera/Applied Logistic Regression/Homework/icu.csv")
+
+#We use glm function in R to get estimated parameters
+iculrmodel<-glm(data=icu,STA~AGE,family="binomial")
+summary(iculrmodel)
+```  
+
+The p-value of the likelihood ratio test to test that AGE slope is different tahn zero is `r pchisq(iculrmodel$null.deviance-iculrmodel$deviance,df=1,lower.tail=FALSE)` Being less than 0.05 we accept the slope of AGE as significant. This is consistent with the Wald test shown in R output.

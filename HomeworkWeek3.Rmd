@@ -1,0 +1,200 @@
+---
+title: "Applied Logistic Regression - Exercise Week 3"
+author: "Yago Durán Cid"
+date: "30/05/2015"
+output:
+  pdf_document:
+    keep_tex: yes
+    latex_engine: lualatex
+---
+
+**WEEK 3**
+  
+*Exercise 1:*
+Use the Myopia Study (MYOPIA.csv)  
+
+a. Using the results from Week 2, Exercise 1, compute 95 percent confidence intervals for the slope coefficient SPHEQ. Write a sentence interpreting this confidence.  
+  
+  We keep the basic model we used in homework 2. This is $\pi(x)=E(y|x)=\frac{e^{(\beta_0+\beta_1SPHEQ)}}{1+e^{(\beta_0+\beta_1SPHEQ)}}$ which gives foolowing results:  
+  
+
+```{r,echo=FALSE}
+#Uploads myopia in R
+#We name the dataset as data
+data <- read.csv("~/Coursera/Applied Logistic Regression/Homework/MYOPIA-fixed.csv")
+
+#We use glm function in R to get estimated parameters
+lrmodel<-glm(data=data,MYOPIC~SPHEQ,family="binomial")
+summary(lrmodel)
+```  
+
+As we know, the confidence interval can be estimated as $\beta_j \pm z_{\frac{1-\alpha}{2}}\hat{\sigma_{\beta_j}}$  
+  
+Thus, the higher bound of the confidence interval is $-3.83310 + 1.96\sqrt{0.17503316}$=`r summary(lrmodel)$coeff[2,1]+1.96*summary(lrmodel)$coeff[2,2]`  
+And the lower bound is $-3.83310 - 1.96\sqrt{0.17503316}$=`r summary(lrmodel)$coeff[2,1]-1.96*summary(lrmodel)$coeff[2,2]`  
+  
+Given the confidence interval estimated above we can say that, with 95% confidence, the true value of $\beta_{SPHEQ}$ is between `r summary(lrmodel)$coeff[2,1]+1.96*summary(lrmodel)$coeff[2,2]` and `r summary(lrmodel)$coeff[2,1]-1.96*summary(lrmodel)$coeff[2,2]` and, therefore, is different than zero (i.e.: the value of SPHEQ impacts the probability of MYOPIA being 1 or 0)  
+
+b. Use R to obtain the estimated covariance matrix. Compute the logit and estimated logistic probability for a subject with SPHEQ = 2. Evaluate the endpoints of the 95 percent confidence intervals for the logit and estimated logistic probability. Write a sentence interpreting the estimated probability and its confidence interval.  
+  
+The variance-covariance matrix of the model is:  
+
+``` {r,echo=FALSE}
+summary(lrmodel)$cov.unscaled
+```  
+  
+Based on the estimated model, we can obtain the logit for SPHEQ=2  
+  
+``` {r,echo=FALSE}
+prediction<-predict(object=lrmodel,newdata=data.frame("SPHEQ"=2.0),se.fit=TRUE)
+tab<-data.frame("estimate"=prediction$fit,"Std.Error"=prediction$se.fit)
+tab
+```
+
+Substituting in the probability fucntion $Prob(SPHEQ=2)=\frac{e^{0.0004941278\pm1.96*0.0003454951}}{1+e^{0.0004941278\pm1.96*0.0003454951}}$  
+  
+Average probability of MYOPIA=1 given that SPHEQ=2 is `r exp(tab[1,1])/(1+exp(tab[1,1]))*100`%  
+At 95% confidence, the probability of MYOPIA=1 given that SPHEQ=2 is between `r exp(tab[1,1]+1.96*tab[1,2])/(1+exp(tab[1,1]+1.96*tab[1,2]))*100`% and `r exp(tab[1,1]-1.96*tab[1,2])/(1+exp(tab[1,1]-1.96*tab[1,2]))*100`%
+  
+*Exercise 2:*
+Use the ICU study (icu.csv)
+a. Using the results from Week 1, Exercise 2, part (d), compute 95 percent confidence intervals for the slope and constant term. Write a sentence interpreting the confidence interval for the slope.  
+  
+As in previous section we show the results of model estimated.  
+  
+```{r,echo=FALSE}
+#Uploads ICU dataset in R
+#We name the dataset as icu
+icu <- read.csv("~/Coursera/Applied Logistic Regression/Homework/icu.csv")
+
+#We use glm function in R to get estimated parameters
+iculrmodel<-glm(data=icu,STA~AGE,family="binomial")
+summary(iculrmodel)
+```
+
+The confidence interval at 95% probablity for both the intercept and the variable AGE is:  
+  
+```{r, echo=FALSE}
+confint.default(iculrmodel)
+```  
+  
+
+b. Obtain the estimated covariance matrix for the model fit from Week 1,  
+  
+``` {r,echo=FALSE}
+summary(iculrmodel)$cov.unscaled
+```  
+  
+
+d. Compute the logit and estimated logistic probability for a 60-year old subject. Compute a 95 percent confidence intervals for the logit and estimated logistic probability. Write a sentence or two interpreting the estimated probability and its confidence interval.  
+  
+``` {r,echo=FALSE}
+icuprediction<-predict(object=iculrmodel,newdata=data.frame("AGE"=60),se.fit=TRUE)
+tab<-data.frame("estimate"=icuprediction$fit,"Std.Error"=icuprediction$se.fit)
+tab
+```
+
+Given that the value of the logit is `r tab[1,1]` with standar error `r tab[1,2]` we can estimate the probability as we did in first section.  
+  
+Average probability of STA=1 given that AGE=60 is `r exp(tab[1,1])/(1+exp(tab[1,1]))*100`%  
+  
+At 95% confidence, the probability of STA=1 given that AGE=60 is between `r exp(tab[1,1]+1.96*tab[1,2])/(1+exp(tab[1,1]+1.96*tab[1,2]))*100`% and `r exp(tab[1,1]-1.96*tab[1,2])/(1+exp(tab[1,1]-1.96*tab[1,2]))*100`%  
+  
+  
+*Exercise 3:*  
+Use the ICU study (icu.csv)  
+Use the ICU data and consider the multiple logistic regression model of vital status, STA, on age (AGE), cancer part of the present problem (CAN), CPR prior to ICU admission (CPR), infection probable at ICU admission (INF), and race (RACE).  
+a. The variable RACE is coded at three levels. Prepare a table showing the coding of the two design variables necessary for including this variable in a logistic regression model.  
+  
+In the original dataset, RACE variable is included as integer, which is incorrect  
+```{r,echo=FALSE}
+icu2<-icu[,c("STA","AGE","CAN","CPR","INF","RACE")]
+summary(icu2$RACE)
+```  
+  
+We have to convert RACE variable from integer to factor  
+```{r,echo=FALSE}
+icu2$RACE<-as.factor(icu2$RACE)
+summary(icu2$RACE)
+```  
+  
+  
+b. Write down the equation for the logistic regression model of STA on AGE, CAN, CPR, INF, and RACE. Write down the equation for the logit transformation of this logistic regression model. How many parameters does this model contain?  
+
+$\pi(x)=\frac{e^{\beta_0+\beta_{1}AGE+\beta_{2}CAN+\beta_{3}CPR+\beta_{4}INF+\beta_{5}RACE2+\beta_{6}RACE3}}{1+e^{\beta_0+\beta_{1}AGE+\beta_{2}CAN+\beta_{3}CPR+\beta_{4}INF+\beta_{5}RACE2+\beta_{6}RACE3}}$  
+  
+The logit is  
+  
+$g(x)=\beta_0+\beta_{1}AGE+\beta_{2}CAN+\beta_{3}CPR+\beta_{4}INF+\beta_{5}RACE2+\beta_{6}RACE3$ 
+  
+We have, thus, seven parameters to estimate.  
+
+c. Write down an expression for the likelihood and log likelihood for the logistic
+regression model in part (b). How many likelihood equations are there? Write down
+an expression for a typical likelihood equation for this problem.  
+  
+The likelihood would be as follows:  
+$\ell(\beta)=\Pi_{i=1}^{n}\pi(x_i)^{y_i}(1-\pi(x_i)^{1-y_i}$  
+  
+Where $y_i=1$ if STA=1 and $y_i=0$ otherwise.  
+
+Unsing logarithms we get thee log likelihood:  
+$log(\ell(\beta))=\sum_{i=1}^n((y_ilog(\pi(x_i))+(1-y_i)log(1-\pi(x_i)))$  
+  
+d. Using a logistic regression package, obtain the maximum likelihood estimates of the parameters of the logistic regression model in part (b). Using these estimates write down the equation for the fitted values, that is, the estimated logistic probabilities.  
+  
+The estimated parameters are as follows:  
+```{r,echo=FALSE}
+#We use glm function in R to get estimated parameters
+icu2lrmodel<-glm(data=icu2,STA~AGE+CAN+CPR+INF+RACE,family="binomial")
+summary(icu2lrmodel)
+```   
+  
+Which translates in  
+  
+$\pi(x_i)=\frac{e^{-3.51152+0.02712AGE_i+0.24451CAN_i+1.64650CPR_i+0.68067INF_i-0.95708RACE2_i+0.25975RACE3_i}}{1+e^{-3.51152+0.02712AGE_i+0.24451CAN_i+1.64650CPR_i+0.68067INF_i-0.95708RACE2_i+0.25975RACE3_i}}$  
+  
+e. Using the results of the output from the logistic regression package used in part (d), assess the significance of the slope coefficients for the variables in the model using the likelihood ratio test. What assumptions are needed for the p-values computed for this test to be valid? What is the value of the deviance for the fitted model?  
+  
+In the likelihood test the null hypotheis is: $H_0: \forall\beta_i=0$  
+  
+$G=Deviance_{model\,without\,variables}-Deviance_{model\,with\,variables}\,\rightsquigarrow\chi^2_{df}$  
+  
+In our case, G=`r icu2lrmodel$null.deviance`-`r icu2lrmodel$deviance`=`r icu2lrmodel$null.deviance -icu2lrmodel$deviance`  
+
+The p-value for the model taking a $\chi^{2}_{df=6}=$ `r pchisq(icu2lrmodel$null.deviance -icu2lrmodel$deviance,6,lower.tail=FALSE)` 
+Being the p-value<0.05 we reject the null hypothesis.  
+  
+f. Use the Wald statistics to obtain an approximation to the significance of the individual slope coefficients for the variables in the model. Fit a reduced model that eliminates those variables with nonsignificant Wald statistics. Assess the joint (conditional) significance of the variables excluded from the model. Present the results of fitting the reduced model in a table.  
+  
+Reviewing the significance obtained fr parameters in section d we can state that variables CAN and RACE are not significant. AGE and CPR are significant at 95% confidence while INF is open to debate. Below we show details for the model inlcluding AGE, CPR and INF variables.  
+
+
+```{r,echo=FALSE}
+#We use glm function in R to get estimated parameters
+icushortlrmodel<-glm(data=icu2,STA~AGE+CPR+INF,family="binomial")
+summary(icushortlrmodel)
+```   
+  
+In order to furtherr assess the significance of INF (which p-value remains higher than 0.05 but lower than 0.1) we can perform a likelihood test comparing the model with no INF to the model including INF.  
+  
+```{r,echo=FALSE}
+#We use glm function in R to get estimated parameters
+icushort2lrmodel<-glm(data=icu2,STA~AGE+CPR,family="binomial")
+```   
+
+G=`r icushort2lrmodel$null.deviance`-`r icushortlrmodel$deviance`=`r icushort2lrmodel$deviance -icushortlrmodel$deviance`  
+  
+The p-value for INF taking a $\chi^{2}_{df=1}=$ `r pchisq(icushort2lrmodel$deviance -icushortlrmodel$deviance,1,lower.tail=FALSE)` Being the p-value>0.05 we can discard INF variable at 95% confidence.  
+
+g. Using the results from part (f), compute 95 percent confidence intervals for all coefficients in the model. Write a sentence interpreting the confidence intervals for the non-constant covariates.
+	
+The 95% confidence interval for the parameters estimated in our last and shortest models are:  
+  
+```{r, echo=FALSE}
+confint.default(icushort2lrmodel)
+``` 
+	
+  
+	
+  

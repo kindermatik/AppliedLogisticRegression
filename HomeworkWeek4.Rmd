@@ -1,0 +1,200 @@
+---
+title: "Applied Logistic Regression - Exercise Week 4"
+author: "Yago Durán Cid"
+date: "06/06/2015"
+output:
+  pdf_document:
+    keep_tex: yes
+    latex_engine: lualatex
+---
+
+**WEEK  4**  
+  
+  
+*Exercise 1:*  
+  
+  
+The data in hyponatremia.dta derive from an epidemiological study of hyponatremia (a life-threatening condition) among runners of the 2002 Boston Marathon. Hyponatremia is defined as an electrolyte disturbance in which the serum sodium concentration is lower than normal (<135 mmol/l). The aim of the study was to determine whether a runner experienced hyponatremia and to identify the principal risk factors. Participants in the 2002 Boston Marathon completed a survey including demographic and anthropometric characteristics (Body Mass Index) one or two days before the race. After the race, runners provided a blood sample in order to measure their serum sodium concentration and completed a questionnaire detailing their urine output during the race. Prerace and postrace weights were also recorded.  
+a. Perform a logistic regression analysis with R using nas135 as dependent
+variable and female as the only independent variable. Interpret the coefficients of
+the model.  
+  
+```{r,echo=FALSE}
+#Uploads hyponatremia in R
+#We name the dataset as data
+data <- read.csv("~/Coursera/Applied Logistic Regression/Homework/hyponatremia.csv")
+
+#We use glm function in R to get estimated parameters
+lrmodel<-glm(data=data,nas135~female,family="binomial")
+summary(lrmodel)
+```  
+  
+The p-value of female variable being significant is `r pchisq(lrmodel$null.deviance-lrmodel$deviance,df=1,lower.tail=FALSE)`which well below 0.05.  
+Being female a binary variable the parameter $\hat{\beta_1}$ associated with the individual being female is the log of odd ratio as follows:  
+$\hat{\beta_1}=log(odd\,ratio_{female=1})-log(odd\,ratio_{female=0})$ and exponentiating $e^{\hat{\beta_1}}=\frac{odd\,ratio_{female=1}}{odd\,ratio_{female=0}}$  
+  
+Given that in our case $\hat{\beta_1}=$ `r lrmodel$coeff[2]` the odd ratio of hyponatremia  among	females	is $e^{1.2259618}=$ `r exp(lrmodel$coeff[2])` times that of males  
+ 
+b. Fit a model with runtime as the only independent variable. Interpret the
+coefficient for runtime. c. Calculate the Odds Ratio for the variable runtime and interpret it.  
+  
+```{r,echo=FALSE}
+#We use glm function in R to get estimated parameters
+lrmodel2<-glm(data=data,nas135~runtime,family="binomial")
+summary(lrmodel2)
+```  
+
+The log odd ratio of increases by `r lrmodel2$coeff[2]` for every additional minute in run time.  
+  
+Given that $odd\,ratio=e^{\hat{\beta_1}}$ the increase of the odd ratio by every minute is $e^{runtime_0\hat{\beta_1}}-e^{(runtime_0+1)\hat{\beta_1}}=e^{(runtime_0-runtime_0+1)\hat{\beta_1}}=e^{\hat{\beta_1}}$  Substituting $\hat{\beta_1}$ by `r lrmodel2$coeff[2]` we get the estimate for the increase of the odds ratio of hyponatremia by every additional minute of run time is $e^{0.0155019}$ = `r exp(lrmodel2$coeff[2])`   
+Moreover, $Growth\,odds=\frac{odds_1}{odds_0}-1=odds\,ratio-1=$ `r (exp(lrmodel2$coeff[2])-1)*100`% This is, by every additional munite of run time, the odds of hyponatremia increases by `r (exp(lrmodel2$coeff[2])-1)*100`%  
+
+d. Interpret the coefficient for the constant in the model with runtime as the only
+independent variable. Does it make sense? If not, what can you do to obtain a
+coefficient for the constant which is easily interpreted?  
+  
+The constant parameter value would describe the log odds of a person who would have run the marathon in zero minutes which makes no sense at all.  
+Alternatively, we centre the runtime variable in our dataset (subtracting the mean to every runtime value in the dataset) the estimated parameter for the constant would describe the log odds of a runner that finished the marathon in the average time.  
+
+```{r,echo=FALSE}
+#We use glm function in R to get estimated parameters
+lrmodel3<-glm(data=data,nas135~scale(runtime,center=TRUE,scale=FALSE),family="binomial")
+summary(lrmodel3)
+``` 
+  
+This is, the odds of hyponatremia for a runner who finished the marathon in the average run time is $e^{-2.096210}=$ `r exp(lrmodel3$coeff[1])`  
+  
+e. Calculate the Odds Ratio of hyponatremia of a runner who takes 2 hours more
+than another runner, and the corresponding 95% Confidence Interval  
+  
+Using the growth factor estimated above: Odds of hyponatremia for a runner that takes two hours more than references runner to finish the marathon is $e^{\hat{120\beta_1}}$ = `r exp(lrmodel2$coeff[2]*120)` times larger.  
+The lower bound of 95% confidence interval for the odds is `r exp(confint.default(lrmodel2,"runtime")[1]*120)`  
+The upper bound of 95% confidence interval for the odds is `r exp(confint.default(lrmodel2,"runtime")[2]*120)`  
+  
+f. Fit a model with female and runtime as independent variables. Interpret both
+coefficients.  
+  
+```{r,echo=FALSE}
+#We use glm function in R to get estimated parameters
+lrmodel4<-glm(data=data,nas135~female+runtime,family="binomial")
+summary(lrmodel4)
+```  
+  
+The log odd ratio of hyponatremia is `r lrmodel4$coeff[2]` for a female than for a male given that both finsih the race in the same time. This is, the odds of hyponatremia is `r (exp(lrmodel4$coeff[2])-1)*100`% higher for a female than for a male given that both finish the race in the same time.
+
+The log odd ratio of hyponatremia increases by `r lrmodel4$coeff[3]` for every additional minute a runner takes to finish the marathon regardless of sex. This is, the odds of hyponatremia increases by `r (exp(lrmodel4$coeff[3])-1)*100`% for every additional minute a runner takes to finish the race regardless of the sex. 
+
+g. Compare the coefficients for female in the model with female as the only
+independent variable with that in the model that contains female and runtime.
+What is the percentage change in the coefficient of female?  
+  
+The estimated parameter for female in the model excluding runtime is `r (lrmodel$coeff[2]/lrmodel4$coeff[2]-1)*100`% higher than the estimated parameter including runtime. Having such a material difference suggests that possible confounding by runtime, provided there is no interaction.  
+
+h. Calculate the Odds Ratio of hyponatremia for a female compared to a male who
+completes the marathon in the same time.  
+  
+Odds ratio is $e^{\hat{\beta_{female}}}$ = `r exp(lrmodel4$coeff[2])`  
+  
+i. What type of association do you expect between the variables female and
+runtime? Answer this question before looking at the data, only on the basis of 
+the observed change in the coefficient for female when runtime is entered into
+the model. Then make a box-plot of runtime by female.  
+  
+Given that the estimated parameter for female increases when runtime is excluded and that runtime parameter is positive, we can conclude that there is a positive correlation between the runner being female and the runtime (i.e.: female runners are, on average, slower than male ones)  
+
+```{r, echo=FALSE,fig.align='center'}
+
+boxplot(runtime~female,data=data,pch="*",col="orange",ylab="runtime",xlab="female")
+```  
+  
+  
+j. Assess whether there is an interaction between female and runtime  
+  
+```{r,echo=FALSE}
+#We use glm function in R to get estimated parameters
+lrmodel5<-glm(data=data,nas135~female*runtime,family="binomial")
+summary(lrmodel5)
+```  
+
+The p-value for the interaction between female and runtime is 0.669123 and, therefore, interaction between sex and runtime is not significant at 95% confidence.
+
+k. Add to the model that contains female and runtime a dichotomous variable
+wgain which takes the value of 0 if wtidff ≤ 0, and the value of 1 if wtidff > 0.
+Test for interaction between female and wgain.  
+    
+The model including the dichotomus variable wgain described above:  
+  
+
+```{r,echo=FALSE}
+#We subset from the dataset the variables to build the model adding wgain
+data2<-data.frame("nas135"=data$nas135,"female"=data$female
+                  ,"runtime"=data$runtime,"wgain"=as.integer(data$wtdiff>0))
+
+#We use glm function in R to get estimated parameters
+lrmodel6<-glm(data=data2,nas135~female+wgain+runtime,family="binomial")
+summary(lrmodel6)
+```    
+  
+Including interaction between female and wgain:  
+  
+```{r,echo=FALSE}
+#We use glm function in R to get estimated parameters
+lrmodel7<-glm(data=data2,nas135~female*wgain+runtime,family="binomial")
+summary(lrmodel7)
+```    
+  
+The interaction is not significant at 95% but it is at 90% confidence.  
+
+l. On the basis of the model with the interaction term, calculate the Odds Ratios of hyponatremia for males who gain weight as compared to those who don’t.
+Repeat this exercise for a female. Interpret your findings.  
+  
+For males, the odd ratio of those who gain weigth vs. those who doesn't is $e^{2.40100}$ = `r exp(lrmodel7$coeff[3])`  
+For females, the odd ratio of those who gain weigth vs. those who doesn't is $e^{2.40100-1.20186}$ = `r exp(lrmodel7$coeff[3]+lrmodel7$coeff[5])`  
+  
+A male who experiences weight gain during a marathon has an odds of hyponatremia  `r exp(lrmodel7$coeff[3])` times higher than that of a male who does not gain weight. On the other hand, a female who experiences weight gain during a marathon has an odds of hyponatremia `r exp(lrmodel7$coeff[3]+lrmodel7$coeff[5])` times higher than that of a female who does not gain weight.  
+  
+
+m. Compare using the Likelihood Ratio test the model with female and runtime with
+a model with female, runtime, wgain, urinat3p and bmi. (Hint: the 2 models
+must be fitted on the same set of observations. Be aware of missing values in
+some of these variables). How many degrees of freedom does the test statistic
+have?  
+  
+We exclude all missing values and run the model with all variables  
+  
+```{r,echo=FALSE}
+#We exclude from the data missing values
+data3<-data.frame(data2,"urinat3p"=data$urinat3p,"bmi"=data$bmi)
+
+#We build a dataframe showing NA values
+#Since true values are 1 and false are zero, the observation with no missing
+#values will be those with a sum of the row = zero
+missing<-is.na(data3)
+missing<-apply(missing,1,sum)
+
+data3<-data3[missing==0,]
+
+lrmodel8<-glm(data=data3,nas135~female+wgain+runtime+urinat3p+bmi
+              ,family="binomial")
+summary(lrmodel8)
+```    
+  
+On the dataset with no missing values we run the model with female and runtime variables only:  
+  
+```{r,echo=FALSE}
+#We use glm function in R to get estimated parameters
+lrmodel9<-glm(data=data3,nas135~female+runtime,family="binomial")
+summary(lrmodel9)
+```    
+  
+The p-value of the likelihood test (based on the deviance of both models provided by R) is `r pchisq(lrmodel9$deviance-lrmodel8$deviance,df=3,lower.tail=FALSE)` so we can confirm that the model with 5 variables is better than the one with only 2.  
+  
+A model including only female, runtime and wgain: 
+  
+```{r,echo=FALSE}
+#We use glm function in R to get estimated parameters
+lrmodel10<-glm(data=data3,nas135~female+runtime+wgain,family="binomial")
+summary(lrmodel10)  
+```   
+  
+Now, the p-value of the likelihood test comparing the model with all variables and the one with three is `r pchisq(lrmodel10$deviance-lrmodel8$deviance,df=2,lower.tail=FALSE)` so we can confirm that the model without bmi and urine variables is better.  

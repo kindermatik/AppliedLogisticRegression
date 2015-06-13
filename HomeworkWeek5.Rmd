@@ -1,0 +1,138 @@
+---
+title: "Applied Logistic Regression - Exercise Week 5"
+author: "Yago Durán Cid"
+date: "13/06/2015"
+output:
+  pdf_document:
+    keep_tex: yes
+    latex_engine: lualatex
+---
+
+**WEEK 5**  
+    
+*Exercise 1:*  
+  
+
+Use the hyponatremia.dta dataset to complete the following  
+a. Assess the association between hyponatremia (dichotomous variable nas135) and
+sex (variable female) by making a 2 by 2 table. Calculate the odds ratio of
+hyponatremia of a female compared to a male. Compute the 95% confidence interval
+for this odds ratio. Interpret the findings.  
+  
+```{r,echo=FALSE}
+#Uploads hyponatremia in R
+#We name the dataset as data
+data <- read.csv("~/Coursera/Applied Logistic Regression/Homework/hyponatremia.csv")
+
+#We create the contingency table with nas135 in the columns and female in the rows
+NaSextable<-ftable(data[,c("female","nas135")])
+NaSextable
+
+OddRatio<-(NaSextable[1,1]*NaSextable[2,2])/(NaSextable[1,2]*NaSextable[2,1])
+ORVariance<-sum(1/c(NaSextable[1,],NaSextable[2,]))
+```  
+  
+The Odds ratio is `r OddRatio` and the log of odd ratio is `r log(OddRatio)`  
+The Variance is `r ORVariance` and the Std. Deviation is `r sqrt(ORVariance)`  
+  
+To obtain the 95% confidence interval for the log of Odd Ratio we apply $log(Odd\,Ratio)\pm1.96*Std.\,Deviation$
+  
+Thus, the upper bound is `r log(OddRatio)+(1.96*sqrt(ORVariance))` and the lower bound is `r log(OddRatio)-(1.96*sqrt(ORVariance))`  
+  
+Exponentiating we get the limits of the Odd Ratio. Upper bound is `r OddRatio*exp(1.96*sqrt(ORVariance))` and the lower bound is `r OddRatio/exp(1.96*sqrt(ORVariance))`  
+ 
+The odds of a female experiencing hyponatremia is 3.4 times greater than that of a male. The 95% Confidence interval for the odds ratio is (1.97, 5.89). Upon repeated sampling, 95% of confidence intervals constructed this way would cover the true population odds ratio.  
+
+  
+b. Perform a logistic regression analysis with R using nas135 as dependent variable and female as the only independent variable. Use the Likelihood Ratio test to assess the significance of the model. Is the model with female a better model than the naïve model?  
+  
+```{r,echo=FALSE}
+#We use glm function in R to get estimated parameters
+lrmodel<-glm(data=data,nas135~female,family="binomial")
+summary(lrmodel)
+```  
+  
+  
+The p-value of the likelihood test comparing the model with female and the one without is `r pchisq(lrmodel$null.deviance-lrmodel$deviance,df=1,lower.tail=FALSE)` The model with female is significantly better than the naïve model.  
+  
+
+c. What is the naïve model? What is the probability of hyponatremia that this model
+predict?  
+  
+The naïve model (excluding any independent variable) can be seen in the table below  
+  
+```{r,echo=FALSE}
+#We create the contingency table with nas135 in the columns and female in the rows
+Natable<-ftable(data[,c("nas135")])
+Natable
+```  
+  
+The naïve model predicts a $\frac{62}{426+62}=$ `r (Natable[2]/sum(Natable))*100`% probability of hyponatremia for every subject in the study.  
+  
+  
+d. Run a logistic regression analyses with no independent variables. Transform the
+coefficient obtained from this model into a probability.  
+  
+```{r,echo=FALSE}
+#We create the contingency table with nas135 in the columns and female in the rows
+lrmodel0<-glm(data=data,nas135~1,family="binomial")
+summary(lrmodel0)
+```  
+  
+The odds is $Odds=\frac{Prob_{x=1}}{1-Prob_{x=1}}$. Manipulating that equation we can get that $Prob_{x=1}=\frac{Odds}{1+Odds}$  
+  
+The logit is the log(Odds), exponentiating we can get the probability from equation above $Prob_{x=1}=\frac{e^{logit}}{1+e^{logit}}$  
+  
+Using the value estimated in our model the probaility is `r (exp(lrmodel0$coeff))/(1+exp(lrmodel0$coeff))`  
+  
+  
+e. Using the model with female as independent variable, compute the estimated
+probability of hyponatremia per males and females. Write down the equation for the
+logit.  
+  
+The model including female as independent variable is  
+  
+```{r,echo=FALSE}
+#We create the contingency table with nas135 in the columns and female in the rows
+lrmodel1<-glm(data=data,nas135~female,family="binomial")
+summary(lrmodel1)
+```  
+  
+The logit is $g(female)=\beta_0+\beta_1female$ 
+  
+Using the formula above, the probability of hyponatremia for a female is $Prob_{nas135=1}=\frac{e^{\beta_0+\beta_1}}{1+e^{\beta_0+\beta_1}}$= `r (exp(sum(lrmodel1$coeff)))/(1+exp(sum(lrmodel1$coeff)))`  
+  
+  
+the probability of hyponatremia for a male is $Prob_{nas135=1}=\frac{e^{\beta_0}}{1+e^{\beta_0}}$= `r (exp(lrmodel1$coeff[1]))/(1+exp(lrmodel1$coeff[1]))` 
+  
+f. Use the Wald test to assess the significance of the coefficient for female.  
+  
+The Wald test is given in  the summary of the model above.  
+  
+  
+g. Fit a model with runtime as the only independent variable. Assess the significance of the model.  
+  
+```{r,echo=FALSE}
+#We create the contingency table with nas135 in the columns and female in the rows
+lrmodel2<-glm(data=data,nas135~runtime,family="binomial")
+summary(lrmodel2)
+```    
+  
+The p-value of the likelihood test comparing the model with runtime and the one without it is `r pchisq(lrmodel2$null.deviance-lrmodel2$deviance,df=1,lower.tail=FALSE)` The model with runtime is significantly better than the naïve model.  
+  
+h. Calculate the probability of hyponatremia of a runner who takes 4 hours (240 minutes) to complete the marathon.  
+  
+The value of the logit for a runner taking 4 hours is `r sum(lrmodel2$coeff*c(1,240))` and the probablity following the equation described above is `r exp(sum(lrmodel2$coeff*c(1,240)))/(1+exp(sum(lrmodel2$coeff*c(1,240))))`  
+  
+  
+i. Fit a model with female and runtime as independent variables. Assess the
+significance of the model. Which null hypothesis is tested?
+	
+```{r,echo=FALSE}
+#We create the contingency table with nas135 in the columns and female in the rows
+lrmodel3<-glm(data=data,nas135~runtime,family="binomial")
+summary(lrmodel3)
+```  
+  
+
+The p-value of the likelihood test comparing the model with female and runtime and the one without them is `r pchisq(lrmodel3$null.deviance-lrmodel3$deviance,df=2,lower.tail=FALSE)` The model with female is significantly better than the naïve model.    

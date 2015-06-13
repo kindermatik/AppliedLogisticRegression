@@ -1,0 +1,362 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+    \usepackage{xltxtra,xunicode}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+  \newcommand{\euro}{€}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\ifxetex
+  \usepackage[setpagesize=false, % page size defined by xetex
+              unicode=false, % unicode breaks when used with xetex
+              xetex]{hyperref}
+\else
+  \usepackage[unicode=true]{hyperref}
+\fi
+\hypersetup{breaklinks=true,
+            bookmarks=true,
+            pdfauthor={Yago Durán Cid},
+            pdftitle={Applied Logistic Regression - Exercise Week 5},
+            colorlinks=true,
+            citecolor=blue,
+            urlcolor=blue,
+            linkcolor=magenta,
+            pdfborder={0 0 0}}
+\urlstyle{same}  % don't use monospace font for urls
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\setcounter{secnumdepth}{0}
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+  \title{Applied Logistic Regression - Exercise Week 5}
+  \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+  \author{Yago Durán Cid}
+  \preauthor{\centering\large\emph}
+  \postauthor{\par}
+  \predate{\centering\large\emph}
+  \postdate{\par}
+  \date{13/06/2015}
+
+
+
+\begin{document}
+
+\maketitle
+
+
+\textbf{WEEK 5}
+
+\emph{Exercise 1:}
+
+Use the hyponatremia.dta dataset to complete the following\\a. Assess
+the association between hyponatremia (dichotomous variable nas135) and
+sex (variable female) by making a 2 by 2 table. Calculate the odds ratio
+of hyponatremia of a female compared to a male. Compute the 95\%
+confidence interval for this odds ratio. Interpret the findings.
+
+\begin{verbatim}
+##        nas135   0   1
+## female               
+## 0             297  25
+## 1             129  37
+\end{verbatim}
+
+The Odds ratio is 3.4074419 and the log of odd ratio is 1.2259618\\The
+Variance is 0.078146 and the Std. Deviation is 0.279546
+
+To obtain the 95\% confidence interval for the log of Odd Ratio we apply
+$log(Odd\,Ratio)\pm1.96*Std.\,Deviation$
+
+Thus, the upper bound is 1.773872 and the lower bound is 0.6780517
+
+Exponentiating we get the limits of the Odd Ratio. Upper bound is
+5.8936293 and the lower bound is 1.9700357
+
+The odds of a female experiencing hyponatremia is 3.4 times greater than
+that of a male. The 95\% Confidence interval for the odds ratio is
+(1.97, 5.89). Upon repeated sampling, 95\% of confidence intervals
+constructed this way would cover the true population odds ratio.
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi}.}
+\setcounter{enumi}{1}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Perform a logistic regression analysis with R using nas135 as
+  dependent variable and female as the only independent variable. Use
+  the Likelihood Ratio test to assess the significance of the model. Is
+  the model with female a better model than the naïve model?
+\end{enumerate}
+
+\begin{verbatim}
+## 
+## Call:
+## glm(formula = nas135 ~ female, family = "binomial", data = data)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -0.7102  -0.7102  -0.4020  -0.4020   2.2608  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(>|z|)    
+## (Intercept)  -2.4749     0.2082 -11.884  < 2e-16 ***
+## female        1.2260     0.2795   4.386 1.16e-05 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 371.60  on 487  degrees of freedom
+## Residual deviance: 351.93  on 486  degrees of freedom
+## AIC: 355.93
+## 
+## Number of Fisher Scoring iterations: 5
+\end{verbatim}
+
+The p-value of the likelihood test comparing the model with female and
+the one without is 9.2039008\times 10\^{}\{-6\} The model with female is
+significantly better than the naïve model.
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi}.}
+\setcounter{enumi}{2}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  What is the naïve model? What is the probability of hyponatremia that
+  this model predict?
+\end{enumerate}
+
+The naïve model (excluding any independent variable) can be seen in the
+table below
+
+\begin{verbatim}
+##    0   1
+##         
+##  426  62
+\end{verbatim}
+
+The naïve model predicts a $\frac{62}{426+62}=$ 12.704918\% probability
+of hyponatremia for every subject in the study.
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi}.}
+\setcounter{enumi}{3}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Run a logistic regression analyses with no independent variables.
+  Transform the coefficient obtained from this model into a probability.
+\end{enumerate}
+
+\begin{verbatim}
+## 
+## Call:
+## glm(formula = nas135 ~ 1, family = "binomial", data = data)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -0.5213  -0.5213  -0.5213  -0.5213   2.0313  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(>|z|)    
+## (Intercept)  -1.9273     0.1359  -14.18   <2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 371.6  on 487  degrees of freedom
+## Residual deviance: 371.6  on 487  degrees of freedom
+## AIC: 373.6
+## 
+## Number of Fisher Scoring iterations: 4
+\end{verbatim}
+
+The odds is $Odds=\frac{Prob_{x=1}}{1-Prob_{x=1}}$. Manipulating that
+equation we can get that $Prob_{x=1}=\frac{Odds}{1+Odds}$
+
+The logit is the log(Odds), exponentiating we can get the probability
+from equation above $Prob_{x=1}=\frac{e^{logit}}{1+e^{logit}}$
+
+Using the value estimated in our model the probaility is 0.1270492
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi}.}
+\setcounter{enumi}{4}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Using the model with female as independent variable, compute the
+  estimated probability of hyponatremia per males and females. Write
+  down the equation for the logit.
+\end{enumerate}
+
+The model including female as independent variable is
+
+\begin{verbatim}
+## 
+## Call:
+## glm(formula = nas135 ~ female, family = "binomial", data = data)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -0.7102  -0.7102  -0.4020  -0.4020   2.2608  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(>|z|)    
+## (Intercept)  -2.4749     0.2082 -11.884  < 2e-16 ***
+## female        1.2260     0.2795   4.386 1.16e-05 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 371.60  on 487  degrees of freedom
+## Residual deviance: 351.93  on 486  degrees of freedom
+## AIC: 355.93
+## 
+## Number of Fisher Scoring iterations: 5
+\end{verbatim}
+
+The logit is $g(female)=\beta_0+\beta_1female$
+
+Using the formula above, the probability of hyponatremia for a female is
+$Prob_{nas135=1}=\frac{e^{\beta_0+\beta_1}}{1+e^{\beta_0+\beta_1}}$=
+0.2228916
+
+the probability of hyponatremia for a male is
+$Prob_{nas135=1}=\frac{e^{\beta_0}}{1+e^{\beta_0}}$= 0.0776398
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi}.}
+\setcounter{enumi}{5}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Use the Wald test to assess the significance of the coefficient for
+  female.
+\end{enumerate}
+
+The Wald test is given in the summary of the model above.
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi}.}
+\setcounter{enumi}{6}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Fit a model with runtime as the only independent variable. Assess the
+  significance of the model.
+\end{enumerate}
+
+\begin{verbatim}
+## 
+## Call:
+## glm(formula = nas135 ~ runtime, family = "binomial", data = data)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.1724  -0.5234  -0.4263  -0.3458   2.5182  
+## 
+## Coefficients:
+##              Estimate Std. Error z value Pr(>|z|)    
+## (Intercept) -5.592594   0.771282  -7.251 4.14e-13 ***
+## runtime      0.015502   0.003091   5.015 5.29e-07 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 360.90  on 476  degrees of freedom
+## Residual deviance: 335.54  on 475  degrees of freedom
+##   (11 observations deleted due to missingness)
+## AIC: 339.54
+## 
+## Number of Fisher Scoring iterations: 5
+\end{verbatim}
+
+The p-value of the likelihood test comparing the model with runtime and
+the one without it is 4.7770591\times 10\^{}\{-7\} The model with
+runtime is significantly better than the naïve model.
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi}.}
+\setcounter{enumi}{7}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Calculate the probability of hyponatremia of a runner who takes 4
+  hours (240 minutes) to complete the marathon.
+\end{enumerate}
+
+The value of the logit for a runner taking 4 hours is -1.872131 and the
+probablity following the equation described above is 0.1332953
+
+\begin{enumerate}
+\def\labelenumi{\roman{enumi}.}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Fit a model with female and runtime as independent variables. Assess
+  the significance of the model. Which null hypothesis is tested?
+\end{enumerate}
+
+\begin{verbatim}
+## 
+## Call:
+## glm(formula = nas135 ~ runtime, family = "binomial", data = data)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.1724  -0.5234  -0.4263  -0.3458   2.5182  
+## 
+## Coefficients:
+##              Estimate Std. Error z value Pr(>|z|)    
+## (Intercept) -5.592594   0.771282  -7.251 4.14e-13 ***
+## runtime      0.015502   0.003091   5.015 5.29e-07 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 360.90  on 476  degrees of freedom
+## Residual deviance: 335.54  on 475  degrees of freedom
+##   (11 observations deleted due to missingness)
+## AIC: 339.54
+## 
+## Number of Fisher Scoring iterations: 5
+\end{verbatim}
+
+The p-value of the likelihood test comparing the model with female and
+runtime and the one without them is 3.1255477\times 10\^{}\{-6\} The
+model with female is significantly better than the naïve model.
+
+\end{document}
